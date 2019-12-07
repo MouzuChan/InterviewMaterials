@@ -8,3 +8,56 @@
         适合数据量较小的性能操作和运算上。
   memcache:数据结构比较单一，不支持持久化，事务支持计较弱，只能保障事务中每个操作连续执行。试用动态系统中减少数据库负载，做缓存提升性能。
   mongdb：支持丰富的数据索引及查询，与关系型数据库mysql最为类似，对增删改查的支持十分完善。(基于分布式文件存储的数据库)，试用于海量数据访问效率问题。
+  
+3.oracle与mysql的区别
+  (1) 对事务的提交
+      MySQL默认是自动提交，而Oracle默认不自动提交，需要用户手动提交，需要在写commit;指令或者点击commit按钮
+  (2) 分页查询
+      MySQL是直接在SQL语句中写"select... from ...where...limit  x, y",有limit就可以实现分页;而Oracle则是需要用到伪列ROWNUM和嵌套查询
+  (3) 事务隔离级别
+      MySQL是read commited的隔离级别，而Oracle是repeatable read的隔离级别，同时Oracle支持serializable的隔离级别，可以实现最高级别的
+      读一致性。每个session提交后其他session才能看到提交的更改。Oracle通过在undo表空间中构造多版本数据块来实现读一致性，每个session
+      查询时，如果对应的数据块发生变化，Oracle会在undo表空间中为这个session构造它查询时的旧的数据块
+      MySQL没有类似Oracle的构造多版本数据块的机制，只支持read commited的隔离级别。一个session读取数据时，其他session不能更改数据，但
+      可以在表最后插入数据。session更新数据时，要加上排它锁，其他session无法访问数据
+  (4) 对事务的支持
+      MySQL在innodb存储引擎的行级锁的情况下才可支持事务，而Oracle则完全支持事务
+  (5) 保存数据的持久性
+      MySQL是在数据库更新或者重启，则会丢失数据，Oracle把提交的sql操作线写入了在线联机日志文件中，保持到了磁盘上，可以随时恢复
+  (6) mysql支持自增长类型（autoIncreament）,oracle不支持
+  (7) 费用
+      MySQL是轻量型数据库，并且免费，没有服务恢复数据。
+      Oracle是重量型数据库，收费，Oracle公司对Oracle数据库有任何服务。
+  ......详情见https://www.cnblogs.com/-flq/p/9003316.html
+  
+4.mybatis和Hibernate的区别：
+    相同点：都可通过SessionFactoryBuild由XML配置文件生成SessionFactory,然后由sessionFactory生成session,最后由session来开启执行事务和
+           SQL语句。其中SessionFactoryBuild、SessionFactory和session的生命周期都差不多。
+           都支持JDBC和JTA事务处理
+    mybatis优势：
+          1)可进行更为细致化的SQL优化，可减少查询字段
+          2）易掌握，相比hibernate门槛较高
+    Hibernate优势：
+          1）Dao层开发比mybatis简单，mybatis需要维护SQL和结果映射
+          2）数据库的移植性更好
+          3）有更好的缓存机制
+          
+5.关于事务的几个特性：
+    1）ACID：原子性、一致性、隔离性和持久性。
+    2）对于脏读、不可重复读、幻读的理解：
+        脏读:在一个事务中读取到另一个事务没有提交的数据
+        不可重复读:在一个事务中,两次查询的结果不一致(针对的update操作)
+        幻读:在一个事务中,两次查询的结果不一致(针对的insert操作)
+    3）事务的四大隔离级别
+        Read uncommited(读未提交)
+        Read uncommited(读提交)
+        Repeatable read(可重复读)
+        Serializable（串行化）
+    4）事务的七种传播行为
+        Propagation-Required
+        Propagation-Supports 使用当前事务，若无则以非事务方式进行
+        Propagation-Mandatory  使用当前事务，若无则抛异常
+        Propagation-Required-New  新建事务
+        Propagation-Not-Supports  以非事务操作，若当前存在事务则挂起
+        Propagation-Never  以非事务操作，若当前存在事务则抛异常
+        Propagation-Nested  与Propagation-Required类似
